@@ -1,0 +1,41 @@
+---
+- name: before-release-upgrade
+  hosts: ubuntuservers
+  remote_user: root
+
+  tasks:
+
+  - name: Disabling third party repos
+    command: mv /etc/apt/sources.list.d /etc/apt/sources.list.disabled
+
+  - name: Update all packages to their latest version
+    ansible.builtin.apt:
+      name: "*"
+      state: latest
+      allow_change_held_packages: true
+      update_cache: yes
+
+  - name: Verify if update-manager-core is present
+    ansible.builtin.apt:
+      name: update-manager-core
+      state: present
+
+  - name: Add rule to allow 1022/tcp port, remote ssh upgrade purposes
+    community.general.ufw:
+      rule: allow
+      port: '1022'
+      proto: tcp
+
+  - name: Add rule to deny 80/tcp port, to deny incoming http traffic to nginx
+    community.general.ufw:
+      rule: deny
+      port: '80'
+      proto: tcp
+
+  - name: Stop nginx (main service)
+    service:
+      name: nginx
+      state: stopped
+
+  - name: Reboot the server
+    reboot:

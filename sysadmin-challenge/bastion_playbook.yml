@@ -1,0 +1,65 @@
+---
+- name: setting basic host configuration
+  hosts: localhost
+  connection: local
+  remote_user: root
+
+  tasks:
+
+  - name: install all required packages
+    apt:
+      pkg:
+        - openssh-server
+        - adduser
+        - libfontconfig1
+        - musl
+        - curl
+        - iptables
+      state: latest
+      update_cache: true
+
+  - name: create administrator user
+    ansible.builtin.user:
+      name: administrator
+      uid: 1000
+      group: root
+      groups: sudo
+      shell: /bin/bash
+      generate_ssh_key: no
+
+  - name: allow 'sudo' group to have passwordless sudo
+    lineinfile:
+      dest: /etc/sudoers
+      state: present
+      regexp: '^%sudo'
+      line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+
+  - name: disable PermitRootLogin
+    lineinfile:
+      path: "/etc/ssh/sshd_config"
+      line: "PermitRootLogin no"
+      state: present
+
+  - name: enable ListenAddress eth1
+    lineinfile:
+      path: "/etc/ssh/sshd_config"
+      line: "ListenAddress 192.168.30.2"
+      state: present
+
+  - name: add tcp wrappers to deny incoming conections to any service 
+    lineinfile:
+      path: "/etc/hosts.deny"
+      line: "ALL : ALL"
+      state: present
+
+  - name: add tcp wrappers to allow incoming conections to network oym
+    lineinfile:
+      path: "/etc/hosts.allow"
+      line: "sshd : 192.168.30."
+      state: present
+
+  - name: installing node_exporter from url
+    ansible.builtin.unarchive:
+      src: https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
+      dest: /opt
+      remote_src: yes

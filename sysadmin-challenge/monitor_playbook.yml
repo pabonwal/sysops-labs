@@ -1,0 +1,84 @@
+---
+- name: setting basic host configuration
+  hosts: localhost
+  connection: local
+  remote_user: root
+
+  tasks:
+
+  - name: install all required packages
+    apt:
+      pkg:
+        - openssh-server
+        - adduser
+        - libfontconfig1
+        - musl
+        - curl
+      state: latest
+      update_cache: true
+
+  - name: create administrator user
+    ansible.builtin.user:
+      name: administrator
+      uid: 1000
+      group: root
+      groups: sudo
+      shell: /bin/bash
+      generate_ssh_key: yes
+      ssh_key_bits: 2048
+      ssh_key_file: .ssh/id_rsa
+
+  - name: allow 'sudo' group to have passwordless sudo
+    lineinfile:
+      dest: /etc/sudoers
+      state: present
+      regexp: '^%sudo'
+      line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+
+  - name: create operator user
+    ansible.builtin.user:
+      name: operator
+      uid: 1040
+      group: operator
+
+  - name: disable PermitRootLogin
+    lineinfile:
+      path: "/etc/ssh/sshd_config"
+      line: "PermitRootLogin no"
+      state: present
+
+  - name: enable ListenAddress eth1
+    lineinfile:
+      path: "/etc/ssh/sshd_config"
+      line: "ListenAddress 192.168.30.3"
+      state: present
+
+  - name: add tcp wrappers to deny incoming conections to any service 
+    lineinfile:
+      path: "/etc/hosts.deny"
+      line: "ALL : ALL"
+      state: present
+
+  - name: add tcp wrappers tdo allow incoming conections to network oym
+    lineinfile:
+      path: "/etc/hosts.allow"
+      line: "sshd : 192.168.30.2"
+      state: present
+
+  - name: installing grafana from url
+    ansible.builtin.unarchive:
+      src: https://dl.grafana.com/enterprise/release/grafana-enterprise-10.0.0.linux-amd64.tar.gz
+      dest: /opt
+      remote_src: yes
+
+  - name: installing prometheus from url
+    ansible.builtin.unarchive:
+      src: https://github.com/prometheus/prometheus/releases/download/v2.50.1/prometheus-2.50.1.linux-amd64.tar.gz
+      dest: /opt
+      remote_src: yes
+
+  - name: installing node_exporter from url
+    ansible.builtin.unarchive:
+      src: https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
+      dest: /opt
+      remote_src: yes

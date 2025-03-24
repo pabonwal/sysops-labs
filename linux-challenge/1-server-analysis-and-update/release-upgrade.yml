@@ -1,0 +1,15 @@
+---
+- name: release-upgrade
+  hosts: ubuntuservers
+  remote_user: root
+
+  tasks:
+
+  - debug:
+      msg: 'This server is running Ubuntu 20.04 LTS and will be upgraded to 22.04 LTS'
+
+  - name: Run do-release-upgrade non-interactively
+    command: do-release-upgrade -f DistUpgradeViewNonInteractive
+
+  - name: Reboot the server.
+    reboot:

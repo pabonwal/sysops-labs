@@ -1,0 +1,45 @@
+---
+- name: after-release-upgrade
+  hosts: ubuntuservers
+  remote_user: root
+
+  tasks:
+
+  - name: Verify Ubuntu release
+    command:  lsb_release -r
+
+  - name: Verify Kernel version
+    command: uname -mrs
+
+  - name: Enabling third party repos
+    ansible.builtin.copy:
+      src: /etc/apt/sources.list.disabled/
+      dest: /etc/apt/sources.list.d
+      remote_src: yes
+
+  - name: Updating apt cache
+    ansible.builtin.apt:
+      update_cache: yes
+
+  - name: Delete rule to allow 1022/tcp port, remote ssh upgrade purposes
+    community.general.ufw:
+      rule: allow
+      port: '1022'
+      proto: tcp
+      delete: true
+
+  - name: Start nginx (main service)
+    service:
+      name: nginx
+      state: started
+
+  - name: Delete rule to deny 80/tcp port, to allow incoming http traffic to nginx
+    community.general.ufw:
+      rule: deny
+      port: '80'
+      proto: tcp
+      delete: true
+
+  - name:  Check if nginx returns status 200
+    ansible.builtin.uri:
+      url: http://{{ansible_hostname}}
