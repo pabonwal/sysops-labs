@@ -1,6 +1,6 @@
 ## SYSOPS LABS
 
-Si no hay alguna indicación explícita, puedes asumir ciertas cosas como por ejemplo la conectividad o el nombre de algún usuario.
+Si no hay alguna indicación explícita, puedes asumir ciertas cosas como por ejemplo la conectividad, el nombre de algún usuario o la herramienta a utilizar para realizar algún diagnóstico. La idea por ahora es llegar al objetivo.
 
 ### LAB A1
 
