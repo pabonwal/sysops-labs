@@ -6,4 +6,4 @@ Se tiene un servidor con Ubuntu Server 24.04 recién instalado, usando Ansible d
 
 1. Usando el siguiente Vagrantfile despliega un servidor Ubuntu 24.04.
 
-´vagrant up´
+`vagrant up`
