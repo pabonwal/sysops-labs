@@ -6,6 +6,4 @@ La recomendación general es realizar todos estos laboratorios sobre un sistema 
 - Virtualbox + extension-pack https://www.virtualbox.org/wiki/Downloads
 - Vagrant https://developer.hashicorp.com/vagrant/downloads
 
-_P_
-
-Testing gh
+WP
